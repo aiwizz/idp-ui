@@ -5,6 +5,7 @@ import { Document, Page } from 'react-pdf';
 import { PDFDocument } from 'pdf-lib';
 import { pdfjs } from 'react-pdf';
 
+
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     'pdfjs-dist/build/pdf.worker.min.mjs',
     import.meta.url,
@@ -16,12 +17,12 @@ function Sidebar() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [numPages, setNumPages] = useState(null);
 
-  const handleFileUpload = async (event) => {
+  async function handleFileUpload(event) {
     const files = Array.from(event.target.files);
     const processedFiles = await Promise.all(
       files.map(async (file) => {
         const fileExtension = file.name.split('.').pop().toLowerCase();
-        if (['jpeg', 'jpg', 'png', 'gif'].includes(fileExtension)) {
+        if (['jpeg', 'jpg', 'png'].includes(fileExtension)) {
           return await convertImageToPdf(file);
         }
         return file;
@@ -30,7 +31,7 @@ function Sidebar() {
     setUploadedFiles((prevFiles) => [...prevFiles, ...processedFiles]);
   };
 
-  const convertImageToPdf = async (imageFile) => {
+  async function convertImageToPdf (imageFile) {
     try {
         const pdfDoc = await PDFDocument.create();
         const imageBytes = await imageFile.arrayBuffer();
@@ -71,10 +72,10 @@ function Sidebar() {
         alert('Failed to convert image to PDF. Please ensure the image is a valid JPEG or PNG.');
         return null;
     }
-};
+  };
 
 
-  const handleFileRemove = (index) => {
+  function handleFileRemove (index) {
     const updatedFiles = uploadedFiles.filter((_, i) => i !== index);
     setUploadedFiles(updatedFiles);
     if (selectedFile === uploadedFiles[index]) {
@@ -82,7 +83,7 @@ function Sidebar() {
     }
   };
 
-  const renderFilePreview = () => {
+  function renderFilePreview() {
     if (!selectedFile || !selectedFile.name) {
       return <Typography>No file selected or file has no name.</Typography>;
     }
@@ -121,7 +122,7 @@ function Sidebar() {
           type="file"
           hidden
           multiple
-          accept=".pdf,.png,.jpeg,.jpg,.tiff,.tif,.docx,.xlsx"
+          accept=".pdf,.png,.jpeg,.jpg,.tiff,.tif"
           onChange={handleFileUpload}
         />
       </Button>
