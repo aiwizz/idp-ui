@@ -6,7 +6,7 @@ import AppMenu from './AppMenu';
 function CustomAppBar() { 
     
    return (
-        <AppBar position="static">
+        <AppBar position="sticky">
             <Toolbar>
                 {/* Logo on the left */}
                 <Box sx={{ flexGrow: 1 }}>

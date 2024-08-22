@@ -1,16 +1,28 @@
 import React from 'react';
 import {
   Box,
-  Table,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-  Button,
+  Button
 } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
+
 import { downloadData } from '../../utils/dataUtils';
 
 function ExtractedTab ({ fields, extractedData }) {
+
+  const columns = fields.map((field, index) => ({
+    field: field.split(' ').join('').toLowerCase(),
+    headerName: field,
+    width: 150 
+  }));
+
+  const rows = extractedData.map((data, index) => {
+    const row = { id: index, fileName: data.fileName };
+    fields.forEach((field) => {
+      row[field.split(' ').join('').toLowerCase()] = data[field];
+    });
+    return row;
+  })
+
   const handleDownload = (format) => {
     downloadData(extractedData, fields, format, 'extracted_data');
   };
@@ -25,26 +37,14 @@ function ExtractedTab ({ fields, extractedData }) {
           Download JSON
         </Button>
       </Box>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>File Name</TableCell>
-            {fields.map((field, index) => (
-              <TableCell key={index}>{field}</TableCell>
-            ))}
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {extractedData.map((data, index) => (
-            <TableRow key={index}>
-              <TableCell>{data.fileName}</TableCell>
-              {fields.map((field, idx) => (
-                <TableCell key={idx}>{data[field] || 'N/A'}</TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <div style={{ height: 400, width: '90%' }}>
+        <DataGrid
+          rows={rows}
+          columns={columns}
+          pageSize={5}
+          rowsPerPageOptions={[5, 10, 20]}
+        />
+      </div>
     </Box>
   );
 };
