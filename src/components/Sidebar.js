@@ -4,7 +4,7 @@ import {
   Button,
   Typography,
   List,
-  ListItem,
+  ListItemButton,
   ListItemText,
   IconButton,
   Dialog,
@@ -13,9 +13,8 @@ import {
   DialogActions,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Document, Page } from 'react-pdf';
+import { Document, Page, pdfjs } from 'react-pdf';
 import { PDFDocument } from 'pdf-lib';
-import { pdfjs } from 'react-pdf';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -45,12 +44,10 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields }) 
         if (['jpeg', 'jpg', 'png'].includes(fileExtension)) {
           return await convertImageToPdf(file);
         } else if (fileExtension === 'pdf') {
-          return file;
+            return file;
         } else {
-          alert(
-            `Unsupported file format: ${fileExtension.toUpperCase()}. Please upload PDF or image files.`
-          );
-          return null;
+            alert(`Unsupported file format: ${fileExtension.toUpperCase()}. Please upload PDF or image files.`);
+            return null;
         }
       })
     );
@@ -187,7 +184,7 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields }) 
         ) : (
           <List>
             {uploadedFiles.map((file, index) => (
-              <ListItem
+              <ListItemButton
                 key={index}
                 button
                 selected={selectedFile === file}
@@ -202,7 +199,7 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields }) 
                 }
               >
                 <ListItemText primary={file.name} />
-              </ListItem>
+              </ListItemButton>
             ))}
           </List>
         )}
