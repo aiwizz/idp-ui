@@ -4,13 +4,13 @@ import {
   Button,
   Typography,
   List,
-  ListItemButton,
   ListItemText,
   IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
+  ListItem,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Document, Page, pdfjs } from 'react-pdf';
@@ -21,7 +21,7 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString();
 
-function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields }) {
+function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, disableBrowse }) {  // Add disableBrowse prop
   const [selectedFile, setSelectedFile] = useState(null);
   const [numPages, setNumPages] = useState(null);
   const [alertOpen, setAlertOpen] = useState(false);
@@ -163,7 +163,7 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields }) 
       <Typography variant="h6" gutterBottom>
         Upload Documents
       </Typography>
-      <Button variant="contained" component="label">
+      <Button variant="contained" component="label" disabled={disableBrowse}>  {/* Disable button based on disableBrowse */}
         Browse Files
         <input
           type="file"
@@ -184,7 +184,7 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields }) 
         ) : (
           <List>
             {uploadedFiles.map((file, index) => (
-              <ListItemButton
+              <ListItem
                 key={index}
                 button
                 selected={selectedFile === file}
@@ -199,7 +199,7 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields }) 
                 }
               >
                 <ListItemText primary={file.name} />
-              </ListItemButton>
+              </ListItem>
             ))}
           </List>
         )}
