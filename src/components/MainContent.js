@@ -4,6 +4,7 @@ import ExtractedTab from './TabsContent/ExtractedTab';
 import ReviewTab from './TabsContent/ReviewTab';
 import FieldsManagementTab from './TabsContent/FieldsManagementTab';
 
+
 function MainContent({ uploadedFiles, fields, setFields }) {
   
   const [tabIndex, setTabIndex] = useState(0);

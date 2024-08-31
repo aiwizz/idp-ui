@@ -5,16 +5,12 @@ import HomeIcon from '@mui/icons-material/Home';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import Logout from '@mui/icons-material/Logout';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { useAuth0 } from '@auth0/auth0-react';
 import { useNavigate } from 'react-router-dom';  // Import the useNavigate hook
 
 
 function AppMenu() {
-  const { logout } = useAuth0(); // Destructure the logout function from useAuth0
   const navigate = useNavigate(); // Initialize the useNavigate hook
-
   const [anchorEl, setAnchorEl] = React.useState(null);
-
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -23,7 +19,8 @@ function AppMenu() {
     setAnchorEl(null);
     
     if (option === 'Logout') {
-      logout({ returnTo: window.location.origin });
+      localStorage.removeItem('token');
+      navigate('/');
     } else if (option === 'Account') {
       navigate('/account');
     } else if (option === 'Home') {
