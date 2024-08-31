@@ -1,21 +1,33 @@
 import React from 'react';
 import { IconButton, Menu, MenuItem } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
+import HomeIcon from '@mui/icons-material/Home';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import Logout from '@mui/icons-material/Logout';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import { useNavigate } from 'react-router-dom';  // Import the useNavigate hook
+
 
 function AppMenu() {
-  
+  const navigate = useNavigate(); // Initialize the useNavigate hook
   const [anchorEl, setAnchorEl] = React.useState(null);
-
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = (option) => {
     setAnchorEl(null);
-    // Handle menu options like 'Account' and 'Logout' here
+    
+    if (option === 'Logout') {
+      localStorage.removeItem('token');
+      navigate('/');
+    } else if (option === 'Account') {
+      navigate('/account');
+    } else if (option === 'Home') {
+      navigate('/');
+    }
+    
+    // You can handle other options like 'Account' here
     console.log(option);
   };
 
@@ -30,6 +42,20 @@ function AppMenu() {
         <MenuIcon />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => handleMenuClose(null)}>
+      <MenuItem onClick={() => handleMenuClose('Home')}>
+            <ListItemIcon>
+              <IconButton
+              edge="end"
+              color="inherit"
+              aria-label="home"
+              sx={{ ml: 2 }}
+              size='small'
+              >
+                <HomeIcon />
+                 Home
+              </IconButton>
+            </ListItemIcon>
+          </MenuItem>
           <MenuItem onClick={() => handleMenuClose('Account')}>
             <ListItemIcon>
               <IconButton
