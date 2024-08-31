@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, CircularProgress } from '@mui/material';
+import { Box } from '@mui/material';
 import CustomAppBar from './components/AppBar';
 import MainContent from './components/MainContent';
 import Sidebar from './components/Sidebar';
@@ -17,16 +17,26 @@ function App() {
   const location = useLocation();  // Get the current route
 
   useEffect(() => {
-    // Check if the user is authenticated by looking for the token in localStorage
+
     const token = localStorage.getItem('token');
+    
+    if (location.pathname === '/reset_password') {
+      // Do nothing, let the reset password page load
+      return;
+    }
+
     if (token) {
       setIsAuthenticated(true);
-      navigate('/home');
+      if (location.pathname === '/') {
+        navigate('/home');
+      }
     } else {
       setIsAuthenticated(false);
-      navigate('/');
+      if (location.pathname !== '/reset_password') {
+        navigate('/');
+      }
     }
-  }, [navigate]);
+  }, [navigate, location]);
 
   const disableBrowse = location.pathname === '/account';  // Disable "Browse Files" on the Account page
 

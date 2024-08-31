@@ -71,11 +71,17 @@ function LandingPage({ setIsAuthenticated }) {
   };
 
   const handlePasswordRecovery = async () => {
+    setLoading(true);  // Set loading to true when the request starts
+    setError('');
+    setMessage('');
+
     try {
       const response = await axios.post('http://127.0.0.1:5000/recover_password', { email: recoveryEmail });
       setMessage(response.data.message);
     } catch (err) {
       setError(err.response.data.message);  
+    }finally {
+      setLoading(false);  // Set loading to false when the request finishes
     }
   };
   
@@ -132,7 +138,7 @@ function LandingPage({ setIsAuthenticated }) {
               sx={{ marginTop: 2 }}
               onClick={handleLogin}
             >
-              Login
+             {loading ? <CircularProgress size={24} /> : 'Login'}  {/* Show spinner or text based on loading state */}
             </Button>
           </Box>
         )}
@@ -212,8 +218,9 @@ function LandingPage({ setIsAuthenticated }) {
               color="primary"
               sx={{ marginTop: 2 }}
               onClick={handlePasswordRecovery}
+              disabled={loading}  // Disable the button when loading
             >
-              Recover Password
+              {loading ? <CircularProgress size={24} /> : 'Recover Password'}  {/* Show spinner or text based on loading state */}
             </Button>
           </Box>
         )}
