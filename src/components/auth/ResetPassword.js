@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Box, TextField, Button, Typography, Paper, Alert, CircularProgress } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import logoname from '../../logoname.png'
 
 function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -29,7 +30,7 @@ function ResetPassword() {
 
     try {
       const response = await axios.post(`http://127.0.0.1:5000/reset_password/${token}`, { password });
-      setMessage('Password has been updated. You can now log in with your new password.');
+      setMessage(response.data.message);
       setTimeout(() => {
         navigate('/');  // Redirect to login page after a delay
       }, 3000);
@@ -49,7 +50,8 @@ function ResetPassword() {
       bgcolor="#f5f5f5"
     >
       <Paper elevation={3} sx={{ padding: 4, maxWidth: 400, width: '100%' }}>
-        <Typography variant="h6" sx={{ marginBottom: 2 }}>
+      <img src={logoname} alt="Logo" style={{ height: 50, marginLeft: 100 }} />
+        <Typography variant="h6" sx={{ marginBottom: 2, paddingTop: 4 }}>
           Reset Password
         </Typography>
         {message && <Alert severity="success">{message}</Alert>}
