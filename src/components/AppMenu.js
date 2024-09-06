@@ -5,30 +5,27 @@ import HomeIcon from '@mui/icons-material/Home';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import Logout from '@mui/icons-material/Logout';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { useNavigate } from 'react-router-dom';  // Import the useNavigate hook
-
+import { useNavigate } from 'react-router-dom';
 
 function AppMenu() {
-  const navigate = useNavigate(); // Initialize the useNavigate hook
+  const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
+
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
 
   const handleMenuClose = (option) => {
     setAnchorEl(null);
-    
+
     if (option === 'Logout') {
-      localStorage.removeItem('token');
+      localStorage.clear();
       navigate('/');
     } else if (option === 'Account') {
       navigate('/account');
     } else if (option === 'Home') {
-      navigate('/');
+      navigate('/home');
     }
-    
-    // You can handle other options like 'Account' here
-    console.log(option);
   };
 
   return (
@@ -42,48 +39,24 @@ function AppMenu() {
         <MenuIcon />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => handleMenuClose(null)}>
-      <MenuItem onClick={() => handleMenuClose('Home')}>
-            <ListItemIcon>
-              <IconButton
-              edge="end"
-              color="inherit"
-              aria-label="home"
-              sx={{ ml: 2 }}
-              size='small'
-              >
-                <HomeIcon />
-                 Home
-              </IconButton>
-            </ListItemIcon>
-          </MenuItem>
-          <MenuItem onClick={() => handleMenuClose('Account')}>
-            <ListItemIcon>
-              <IconButton
-              edge="end"
-              color="inherit"
-              aria-label="account"
-              sx={{ ml: 2 }}
-              size='small'
-              >
-                <AccountCircle />
-                 My account
-              </IconButton>
-            </ListItemIcon>
-          </MenuItem>
-          <MenuItem onClick={() => handleMenuClose('Logout')}>
-            <ListItemIcon>
-              <IconButton
-              edge="end"
-              color="inherit"
-              aria-label="logout"
-              sx={{ ml: 2 }}
-              size='small'
-              >
-                <Logout />
-                 Logout
-              </IconButton>
-            </ListItemIcon>
-          </MenuItem>
+        <MenuItem onClick={() => handleMenuClose('Home')}>
+          <ListItemIcon>
+            <HomeIcon />
+          </ListItemIcon>
+          Home
+        </MenuItem>
+        <MenuItem onClick={() => handleMenuClose('Account')}>
+          <ListItemIcon>
+            <AccountCircle />
+          </ListItemIcon>
+          My account
+        </MenuItem>
+        <MenuItem onClick={() => handleMenuClose('Logout')}>
+          <ListItemIcon>
+            <Logout />
+          </ListItemIcon>
+          Logout
+        </MenuItem>
       </Menu>
     </>
   );

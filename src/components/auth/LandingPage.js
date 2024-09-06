@@ -14,6 +14,7 @@ function LandingPage({ setIsAuthenticated }) {
     password: '',
     confirmPassword: '',
   });
+  const [emailFor2FA, setEmailFor2FA] = useState('');  // Store email for 2FA verification
   const [recoveryEmail, setRecoveryEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -30,45 +31,51 @@ function LandingPage({ setIsAuthenticated }) {
   const handleLogin = async () => {
     setLoading(true);  // Show spinner when login starts
     try {
-      const response = await axios.post('http://127.0.0.1:5000/login', loginData);
-      console.log(response);
-      setMessage(response.data.message);
-      //get the token from the response and store it in local storage
-      localStorage.setItem('token', response.data.token);
-      setIsAuthenticated(true);
-      //redirect to MainContent component
-      navigate('/home');
+        const response = await axios.post('http://127.0.0.1:5000/login', loginData);
+        console.log(response);
+        if (response.data.two_factor_required) {
+            setEmailFor2FA(loginData.email);  // Set the email for 2FA
+            navigate('/verify_2fa', { state: { email: loginData.email } });
+        } else {
+            // Get the token from the response and store it in local storage
+            localStorage.setItem('fullname', response.data.fullname); // Ensure the backend sends fullname
+            localStorage.setItem('email', loginData.email); // Or use response.data.email if available
+            setIsAuthenticated(true);
+            // Redirect to MainContent component
+            navigate('/home');
+        }
     } catch (err) {
-      setError(err.response.data.message);
-    }finally {
-      setLoading(false);
+        setError(err.response.data.message);
+    } finally {
+        setLoading(false);
     }
-  };
+};
 
-  const handleRegister = async () => {
-    if (registerData.password !== registerData.confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
-    setLoading(true);  // Set loading to true when the request starts
-    setError('');
-    setMessage('');
+const handleRegister = async () => {
+  if (registerData.password !== registerData.confirmPassword) {
+    setError('Passwords do not match.');
+    return;
+  }
+  setLoading(true);  // Set loading to true when the request starts
+  setError('');
+  setMessage('');
 
-    try {
-      const response = await axios.post('http://127.0.0.1:5000/register', {
-        fullname: registerData.fullname,
-        email: registerData.email,
-        password: registerData.password,
-      });
-      console.log(response);
-      setMessage(response.data.message);
-    } catch (err) {
-      console.log(err);
-      setError(err.response.data.message);
-    }finally {
-      setLoading(false);  // Set loading to false when the request finishes
-    }
-  };
+  try {
+    const response = await axios.post('http://127.0.0.1:5000/register', {
+      fullname: registerData.fullname,
+      email: registerData.email,
+      password: registerData.password,
+    });
+    console.log(response);
+    setMessage(response.data.message);
+  } catch (err) {
+    console.log(err);
+    setError(err.response.data.message);
+  }finally {
+    setLoading(false);  // Set loading to false when the request finishes
+  }
+};
+
 
   const handlePasswordRecovery = async () => {
     setLoading(true);  // Set loading to true when the request starts
@@ -137,6 +144,7 @@ function LandingPage({ setIsAuthenticated }) {
               color="primary"
               sx={{ marginTop: 2 }}
               onClick={handleLogin}
+              disabled={loading}  // Disable the button when loading
             >
              {loading ? <CircularProgress size={24} /> : 'Login'}  {/* Show spinner or text based on loading state */}
             </Button>

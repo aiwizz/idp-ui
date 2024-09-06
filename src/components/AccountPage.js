@@ -1,11 +1,29 @@
-import React from 'react';
-import { useAuth0 } from '@auth0/auth0-react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Avatar } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 function AccountPage() {
-  const { user, isAuthenticated } = useAuth0();
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
-  if (!isAuthenticated) {
+  useEffect(() => {
+    
+    // Retrieve user data from local storage
+    const fullname = localStorage.getItem('fullname');
+    const email = localStorage.getItem('email');
+
+    if (!fullname || !email) {
+      return <Typography variant="h6">Error loading account details.</Typography>;
+    }
+
+    if (fullname && email) {
+      setUser({ fullname, email });
+    } else {
+      navigate('/');  // Redirect to landing page if user data is not found
+    }
+  }, [navigate]);
+
+  if (!user) {
     return <Typography variant="h6">You are not logged in.</Typography>;
   }
 
@@ -19,14 +37,16 @@ function AccountPage() {
       marginTop={-25}
       p={3}
     >
-      <Avatar src={user.picture} alt={user.name} sx={{ width: 100, height: 100, mb: 2 }} />
-      <Typography variant="h4">{user.name}</Typography>
+      <Avatar sx={{ width: 100, height: 100, mb: 2 }}>
+        {user.fullname.charAt(0).toUpperCase()}
+      </Avatar>
+      <Typography variant="h4">{user.fullname}</Typography>
       <Typography variant="h6" color="textSecondary">
         {user.email}
       </Typography>
-      {/* Add more user details as needed */}
     </Box>
   );
 }
 
 export default AccountPage;
+

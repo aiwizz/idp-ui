@@ -7,22 +7,21 @@ import LandingPage from './components/auth/LandingPage';
 import AccountPage from './components/AccountPage';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import ResetPassword from './components/auth/ResetPassword';
-
+import Verify2FA from './components/auth/Verify2FA';
 
 function App() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [fields, setFields] = useState([]); // State for managing fields
   const [isAuthenticated, setIsAuthenticated] = useState(false); // Track authentication status
   const navigate = useNavigate();
-  const location = useLocation();  // Get the current route
+  const location = useLocation();
+  const [emailFor2FA, setEmailFor2FA] = useState(''); // Store email for 2FA verification
 
   useEffect(() => {
-
     const token = localStorage.getItem('token');
-    
-    if (location.pathname === '/reset_password') {
-      // Do nothing, let the reset password page load
-      return;
+
+    if (location.pathname === '/reset_password' || location.pathname === '/verify_2fa') {
+      return; // Allow access to reset password and 2FA pages without being authenticated
     }
 
     if (token) {
@@ -32,21 +31,20 @@ function App() {
       }
     } else {
       setIsAuthenticated(false);
-      if (location.pathname !== '/reset_password') {
+      if (location.pathname !== '/') {
         navigate('/');
       }
     }
   }, [navigate, location]);
 
-  const disableBrowse = location.pathname === '/account';  // Disable "Browse Files" on the Account page
+  const disableBrowse = location.pathname === '/account'; // Disable "Browse Files" on the Account page
 
   return (
     <Box>
       <Routes>
-        {/* Public Routes */}
         <Route path="/reset_password" element={<ResetPassword />} />
-
-        {/* Conditional rendering based on authentication */}
+        <Route path="/verify_2fa" element={<Verify2FA email={emailFor2FA} setIsAuthenticated={setIsAuthenticated} />} />
+        
         {isAuthenticated ? (
           <>
             <Route path="/home" element={
@@ -67,10 +65,13 @@ function App() {
                 </Box>
               </>
             } />
-            <Route path="/account" element={<AccountPage />} />
+            <Route path="/account" element={
+                <><CustomAppBar /><AccountPage /></>} 
+            />
+            
           </>
         ) : (
-          <Route path="/" element={<LandingPage setIsAuthenticated={setIsAuthenticated} />} />
+          <Route path="/" element={<LandingPage setIsAuthenticated={setIsAuthenticated} setEmailFor2FA={setEmailFor2FA} />} />
         )}
       </Routes>
     </Box>
