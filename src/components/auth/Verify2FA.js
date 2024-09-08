@@ -25,7 +25,9 @@ function Verify2FA({ setIsAuthenticated }) {
       });
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('fullname', response.data.fullname);
+      localStorage.setItem('request_count', response.data.request_count);
       localStorage.setItem('email', email);
+
       setIsAuthenticated(true);
       navigate('/home');
     } catch (err) {
