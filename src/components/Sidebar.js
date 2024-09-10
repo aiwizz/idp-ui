@@ -13,41 +13,70 @@ import {
   ListItem,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page, pdfjs } from 'react-pdf'; // Re-import Document and Page from react-pdf
 import { PDFDocument } from 'pdf-lib';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url
 ).toString();
 
-function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, disableBrowse }) {  // Add disableBrowse prop
+function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, disableBrowse }) {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [numPages, setNumPages] = useState(null);
+  const [numPages, setNumPages] = useState(null);  // Define numPages and setNumPages
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [filesToProcess, setFilesToProcess] = useState([]);
+  const navigate = useNavigate();
 
   // Handle file upload
   async function handleFileUpload(event) {
+    const files = Array.from(event.target.files); 
+
     if (fields.length === 0) {
-      setAlertMessage(
-        'Please add at least one field in Fields Management before processing files.'
-      );
+      setAlertMessage('Please add at least one field in Fields Management before processing files.');
       setAlertOpen(true);
       return;
     }
 
-    const files = Array.from(event.target.files);
+    setFilesToProcess(files); 
+
+    // Get the Bearer token from localStorage
+    const token = localStorage.getItem('token');
+
+    // Make an API call to check for free uploads or charge
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/process', { /* pass any necessary data */ }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      if (response.data.requires_payment_method) {
+        navigate('/payment', { state: { filesToProcess } });
+      } else {
+        processFileUpload(files);
+      }
+    } catch (error) {
+      setAlertMessage('An error occurred during processing.');
+      setAlertOpen(true);
+      console.error('An error occurred during processing:', error);
+    }
+  }
+
+  async function processFileUpload(files) {
     const processedFiles = await Promise.all(
       files.map(async (file) => {
         const fileExtension = file.name.split('.').pop().toLowerCase();
         if (['jpeg', 'jpg', 'png'].includes(fileExtension)) {
           return await convertImageToPdf(file);
         } else if (fileExtension === 'pdf') {
-            return file;
+          return file;
         } else {
-            alert(`Unsupported file format: ${fileExtension.toUpperCase()}. Please upload PDF or image files.`);
-            return null;
+          alert(`Unsupported file format: ${fileExtension.toUpperCase()}. Please upload PDF or image files.`);
+          return null;
         }
       })
     );
@@ -93,9 +122,7 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
       return pdfFile;
     } catch (error) {
       console.error('Error converting image to PDF:', error);
-      alert(
-        'Failed to convert image to PDF. Please ensure the image is a valid JPEG or PNG.'
-      );
+      alert('Failed to convert image to PDF. Please ensure the image is a valid JPEG or PNG.');
       return null;
     }
   }
@@ -112,7 +139,6 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
     // Clear preview if the removed file was being previewed
     if (selectedFile === fileToRemove) {
       setSelectedFile(null);
-      setNumPages(null);
     }
   }
 
@@ -131,10 +157,8 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
     return (
       <Document
         file={fileUrl}
-        onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-        onLoadError={(error) =>
-          console.error('Error while loading document:', error)
-        }
+        onLoadSuccess={({ numPages }) => setNumPages(numPages)}  // Set numPages when the document loads
+        onLoadError={(error) => console.error('Error while loading document:', error)}
       >
         {Array.from(new Array(numPages), (el, index) => (
           <Page
@@ -163,7 +187,7 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
       <Typography variant="h6" gutterBottom>
         Upload Documents
       </Typography>
-      <Button variant="contained" component="label" disabled={disableBrowse}>  {/* Disable button based on disableBrowse */}
+      <Button variant="contained" component="label" disabled={disableBrowse}>
         Browse Files
         <input
           type="file"
@@ -173,7 +197,6 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
           onChange={handleFileUpload}
         />
       </Button>
-
       {/* Uploaded Files List */}
       <Box sx={{ mt: 4 }}>
         <Typography variant="subtitle1">Uploaded Files:</Typography>
@@ -190,10 +213,7 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
                 selected={selectedFile === file}
                 onClick={() => setSelectedFile(file)}
                 secondaryAction={
-                  <IconButton
-                    edge="end"
-                    onClick={() => handleFileDelete(index)}
-                  >
+                  <IconButton edge="end" onClick={() => handleFileDelete(index)}>
                     <DeleteIcon />
                   </IconButton>
                 }
@@ -231,16 +251,7 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
           <Typography>{alertMessage}</Typography>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={() => setAlertOpen(false)}
-            variant="contained"
-            sx={{
-              transition: 'background-color 0.3s',
-              '&:hover': {
-                backgroundColor: '#1976d2',
-              },
-            }}
-          >
+          <Button onClick={() => setAlertOpen(false)} variant="contained">
             OK
           </Button>
         </DialogActions>

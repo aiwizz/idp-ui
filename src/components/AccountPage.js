@@ -3,32 +3,46 @@ import { Box, Typography, Avatar, Tooltip } from '@mui/material';
 import DriveFolderUploadRoundedIcon from '@mui/icons-material/DriveFolderUpload';
 import Badge from '@mui/material/Badge';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 function AccountPage() {
   const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);  // Track errors
   const navigate = useNavigate();
-  const FREE_UPLOADS = 10; // Set the number of free uploads in the /process routes.py  as well
+  const FREE_UPLOADS = 10;  // Set the number of free uploads in the /process routes.py as well
 
   useEffect(() => {
-    
-    // Retrieve user data from local storage
-    const fullname = localStorage.getItem('fullname');
-    const email = localStorage.getItem('email');
-    const request_count = localStorage.getItem('request_count');
+    const token = localStorage.getItem('token');  // Get the token from local storage
 
-    if (!fullname || !email) {
-      return <Typography variant="h6">Error loading account details.</Typography>;
+    //if token is not found or has expired, redirect to landing page
+    if (!token) {
+      navigate('/'); 
+      return;
     }
 
-    if (fullname && email && request_count) {
-      setUser({ fullname, email, request_count });
-    } else {
-      navigate('/');  // Redirect to landing page if user data is not found
-    }
+    const fetchAccountData = async () => {
+      try {
+        const response = await axios.get('http://127.0.0.1:5000/account', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        setUser(response.data);  // Set the user data from the API response
+      } catch (err) {
+        console.error('Error fetching account data:', err);
+        setError('Failed to load account details.');
+      }
+    };
+
+    fetchAccountData();
   }, [navigate]);
 
+  if (error) {
+    return <Typography variant="h6">{error}</Typography>;  // Display error message if data fetch fails
+  }
+
   if (!user) {
-    return <Typography variant="h6">You are not logged in.</Typography>;
+    return <Typography variant="h6">Loading account details...</Typography>;  // Show loading state
   }
 
   return (
@@ -48,15 +62,13 @@ function AccountPage() {
       <Typography variant="h6" color="textSecondary" marginBottom={5}>
         {user.email}
       </Typography>
-      <Tooltip title="Uploads Remaining">
+      <Tooltip title="Number of Free Uploads Remaining">
         <Badge badgeContent={parseInt(FREE_UPLOADS - user.request_count)} color="primary" showZero>
           <DriveFolderUploadRoundedIcon fontSize="large" />
         </Badge>
       </Tooltip>
     </Box>
-    
   );
 }
 
 export default AccountPage;
-

@@ -8,6 +8,11 @@ import AccountPage from './components/AccountPage';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import ResetPassword from './components/auth/ResetPassword';
 import Verify2FA from './components/auth/Verify2FA';
+import PaymentPage from './components/PaymentPage';  // Import PaymentPage
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe('pk_test_51OvqmrJeGVIgSUHZ3BYL0P9QVXv1QfMFFXM0C220hxzij2YioVAgNxsihfPr2BV0YBz0P4wi9Cr3ElTLSP26mqao00our52zBA');
 
 function App() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -68,6 +73,11 @@ function App() {
             <Route path="/account" element={
                 <><CustomAppBar /><AccountPage /></>} 
             />
+            <Route path="/payment" element={
+              <Elements stripe={stripePromise}>
+                <PaymentPage />
+              </Elements>
+            } />
             
           </>
         ) : (

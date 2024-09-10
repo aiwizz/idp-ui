@@ -14,7 +14,6 @@ function LandingPage({ setIsAuthenticated }) {
     password: '',
     confirmPassword: '',
   });
-  const [emailFor2FA, setEmailFor2FA] = useState('');  // Store email for 2FA verification
   const [recoveryEmail, setRecoveryEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -34,7 +33,6 @@ function LandingPage({ setIsAuthenticated }) {
         const response = await axios.post('http://127.0.0.1:5000/login', loginData);
         console.log(response);
         if (response.data.two_factor_required) {
-            setEmailFor2FA(loginData.email);  // Set the email for 2FA
             navigate('/verify_2fa', { state: { email: loginData.email } });
         } else {
             // Get the token from the response and store it in local storage
