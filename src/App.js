@@ -87,9 +87,12 @@ function App() {
                 <><CustomAppBar /><AccountPage /></>} 
             />
             <Route path="/payment-setup" element={
-              <Elements stripe={stripePromise}>
-                <PaymentSetup />
-              </Elements>
+              <>
+                <CustomAppBar />
+                <Elements stripe={stripePromise}>
+                  <PaymentSetup />
+                </Elements>
+              </>
             } />
           </>
         ) : (

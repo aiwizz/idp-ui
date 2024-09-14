@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Avatar, Tooltip } from '@mui/material';
+import { Box, Typography, Avatar, Tooltip, Button } from '@mui/material'; // Import Button
 import DriveFolderUploadRoundedIcon from '@mui/icons-material/DriveFolderUpload';
 import Badge from '@mui/material/Badge';
 import { useNavigate } from 'react-router-dom';
@@ -70,6 +70,15 @@ function AccountPage() {
       <Typography variant="h6" color="textSecondary" marginTop={3}>
         Total Amount Spent: ${user.total_spent || 0}
       </Typography>
+      {/* Add Update Payment Method Button */}
+      <Button 
+        variant="contained" 
+        color="primary" 
+        sx={{ mt: 3 }} 
+        onClick={() => navigate('/payment-setup')}
+      >
+        Update Payment Method
+      </Button>
     </Box>
   );
 }

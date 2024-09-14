@@ -54,17 +54,19 @@ function PaymentSetup() {
             display="flex"
             justifyContent="center"
             alignItems="center"
-            minHeight="100vh"
+            minHeight="80vh"
             bgcolor="#f5f5f5"
             p={2}
         >
-            <Paper elevation={3} sx={{ p: 4, maxWidth: 400, width: '100%' }}>
-                <Typography variant="h5" gutterBottom>
-                    Payment Setup
-                </Typography>
-                <Typography variant="body1" gutterBottom>
-                    Please enter your payment details below to save them for future use.
-                </Typography>
+            <Paper elevation={3} sx={{ p: 4, maxWidth: 500, width: '100%', maxHeight: 500, height: '100%' }}>
+                <Box mb={3} marginBottom={5}>
+                    <Typography variant="h5" gutterBottom>
+                        {`Update Payment Method`}
+                    </Typography>
+                    <Typography variant="body1" gutterBottom color="textSecondary">
+                        Please enter your payment details below to save them for future use.
+                    </Typography>
+                </Box>
                 <form onSubmit={handleSubmit}>
                     <Box mb={3}>
                         <CardElement
