@@ -14,7 +14,7 @@ function AccountPage() {
   useEffect(() => {
     const token = localStorage.getItem('token');  // Get the token from local storage
 
-    //if token is not found or has expired, redirect to landing page
+    // if token is not found or has expired, redirect to landing page
     if (!token) {
       navigate('/'); 
       return;
@@ -67,6 +67,9 @@ function AccountPage() {
           <DriveFolderUploadRoundedIcon fontSize="large" />
         </Badge>
       </Tooltip>
+      <Typography variant="h6" color="textSecondary" marginTop={3}>
+        Total Amount Spent: ${user.total_spent || 0}
+      </Typography>
     </Box>
   );
 }

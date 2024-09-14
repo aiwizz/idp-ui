@@ -8,7 +8,7 @@ import AccountPage from './components/AccountPage';
 import { Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import ResetPassword from './components/auth/ResetPassword';
 import Verify2FA from './components/auth/Verify2FA';
-import PaymentPage from './components/PaymentPage';  
+import PaymentSetup from './components/PaymentSetup'; 
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
@@ -86,12 +86,11 @@ function App() {
             <Route path="/account" element={
                 <><CustomAppBar /><AccountPage /></>} 
             />
-            <Route path="/payment" element={
+            <Route path="/payment-setup" element={
               <Elements stripe={stripePromise}>
-                <PaymentPage />
+                <PaymentSetup />
               </Elements>
             } />
-            
           </>
         ) : (
           <Route path="/" element={<LandingPage setIsAuthenticated={setIsAuthenticated} setEmailFor2FA={setEmailFor2FA} />} />

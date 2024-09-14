@@ -28,12 +28,11 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
   const [numPages, setNumPages] = useState(null);  // Define numPages and setNumPages
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
-  const [filesToProcess, setFilesToProcess] = useState([]);
   const navigate = useNavigate();
 
   // Handle file upload
   async function handleFileUpload(event) {
-    const files = Array.from(event.target.files); 
+    const files = Array.from(event.target.files);
 
     if (fields.length === 0) {
       setAlertMessage('Please add at least one field in Fields Management before processing files.');
@@ -41,28 +40,55 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
       return;
     }
 
-    setFilesToProcess(files); 
-
     // Get the Bearer token from localStorage
     const token = localStorage.getItem('token');
 
-    // Make an API call to check for free uploads or charge
     try {
-      const response = await axios.post('http://127.0.0.1:5000/process', { /* pass any necessary data */ }, {
+      // Check the current request count
+      const accountResponse = await axios.get('http://127.0.0.1:5000/account', {
         headers: {
-          Authorization: `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
+      console.log('Account response:', accountResponse.data);
+      const { request_count, payment_method_id } = accountResponse.data;
 
-      if (response.data.requires_payment_method) {
-        navigate('/payment', { state: { filesToProcess } });
+      if (request_count < 10) {
+        // User has free uploads remaining
+        await processFiles(files, token);
+      } else if (request_count >= 10 && !payment_method_id) {
+        // User has exhausted free uploads and has no payment method saved
+        navigate('/payment-setup', { state: { filesToProcess: files } });
       } else {
-        processFileUpload(files);
+        // User has a payment method saved and should be charged
+        await processFiles(files, token);
       }
     } catch (error) {
+      console.error('Error during file processing:', error);
       setAlertMessage('An error occurred during processing.');
       setAlertOpen(true);
-      console.error('An error occurred during processing:', error);
+    }
+  }
+
+  async function processFiles(files, token) {
+    try {
+      const response = await axios.post(
+        'http://127.0.0.1:5000/process',
+        { files: files.map(file => ({ name: file.name })) }, // Send file names
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data.message.includes('processed successfully')) {
+        processFileUpload(files); // Call your existing file upload processing logic
+      }
+    } catch (error) {
+      console.error('Error during file processing:', error);
+      setAlertMessage('An error occurred during processing.');
+      setAlertOpen(true);
     }
   }
 
@@ -259,5 +285,4 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
     </Box>
   );
 }
-
 export default Sidebar;
