@@ -52,7 +52,7 @@ function AccountPage() {
       alignItems="center"
       justifyContent="center"
       height="100vh"
-      marginTop={-25}
+      marginTop={-15}
       p={3}
     >
       <Avatar sx={{ width: 100, height: 100, mb: 2 }}>

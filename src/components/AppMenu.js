@@ -7,7 +7,7 @@ import Logout from '@mui/icons-material/Logout';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { useNavigate } from 'react-router-dom';
 
-function AppMenu() {
+function AppMenu({ setIsAuthenticated }) { // Accept setIsAuthenticated as a prop
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState(null);
 
@@ -20,7 +20,8 @@ function AppMenu() {
 
     if (option === 'Logout') {
       localStorage.clear();
-      navigate('/');
+      setIsAuthenticated(false); // Update the authentication state
+      navigate('/'); // Navigate to LandingPage
     } else if (option === 'Account') {
       navigate('/account');
     } else if (option === 'Home') {

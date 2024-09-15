@@ -13,7 +13,6 @@ import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
 
-
 function App() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [fields, setFields] = useState([]);
@@ -67,7 +66,7 @@ function App() {
           <>
             <Route path="/home" element={
               <>
-                <CustomAppBar />
+                <CustomAppBar setIsAuthenticated={setIsAuthenticated} /> {/* Pass setIsAuthenticated */}
                 <Box sx={{ display: 'flex', height: 'calc(100vh - 64px)' }}>
                   <Sidebar
                     uploadedFiles={uploadedFiles}
@@ -84,11 +83,11 @@ function App() {
               </>
             } />
             <Route path="/account" element={
-                <><CustomAppBar /><AccountPage /></>} 
+                <><CustomAppBar setIsAuthenticated={setIsAuthenticated} /><AccountPage /></>}
             />
             <Route path="/payment-setup" element={
               <>
-                <CustomAppBar />
+                <CustomAppBar setIsAuthenticated={setIsAuthenticated} />
                 <Elements stripe={stripePromise}>
                   <PaymentSetup />
                 </Elements>
