@@ -49,5 +49,4 @@ function ReviewTab ({ fields, reviewData }) {
     </Box>
   );
 };
-
 export default ReviewTab;

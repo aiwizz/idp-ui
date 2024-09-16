@@ -15,7 +15,11 @@ import axios from 'axios';
 
 function App() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [fields, setFields] = useState([]);
+  const [fields, setFields] = useState(() => {
+    // Load fields from localStorage on initial render
+    const savedFields = localStorage.getItem('fields');
+    return savedFields ? JSON.parse(savedFields) : [];
+  });
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,6 +27,14 @@ function App() {
 
   const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
   
+  // Save fields to localStorage whenever they change
+  useEffect(() => {
+    if (fields.length > 0) {
+      localStorage.setItem('fields', JSON.stringify(fields));
+    }
+  }, [fields]);
+
+
   useEffect(() => {
     const checkTokenValidity = async () => {
       try {

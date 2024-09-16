@@ -100,5 +100,4 @@ function FieldsManagementTab ({ fields, setFields }) {
     </Box>
   );
 };
-
 export default FieldsManagementTab;

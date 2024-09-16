@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import axios from 'axios';
 import { Box, Button, Typography, Paper } from '@mui/material';
+import WarningOutlinedIcon from '@mui/icons-material/WarningOutlined';
 
 function PaymentSetup() {
     const stripe = useStripe();
@@ -58,50 +59,59 @@ function PaymentSetup() {
             bgcolor="#f5f5f5"
             p={2}
         >
-            <Paper elevation={3} sx={{ p: 4, maxWidth: 500, width: '100%', maxHeight: 500, height: '100%' }}>
-                <Box mb={3} marginBottom={5}>
-                    <Typography variant="h5" gutterBottom>
-                        {`Update Payment Method`}
-                    </Typography>
-                    <Typography variant="body1" gutterBottom color="textSecondary">
-                        Please enter your payment details below to save them for future use.
+            <Box>
+                <Box marginBottom={8}>
+                    <WarningOutlinedIcon color="error" fontSize="large" />
+                    <Typography variant="h6" gutterBottom color={"red"}>
+                        You have ran out of FREE uploads.
+                        <br/>Please update your payment method to continue uploading and processing files.
                     </Typography>
                 </Box>
-                <form onSubmit={handleSubmit}>
-                    <Box mb={3}>
-                        <CardElement
-                            options={{
-                                style: {
-                                    base: {
-                                        fontSize: '16px',
-                                        color: '#424770',
-                                        '::placeholder': {
-                                            color: '#aab7c4',
+                <Paper elevation={3} sx={{ p: 4, maxWidth: 500, width: '100%', maxHeight: 500, height: '100%' }}>
+                    <Box mb={3} >
+                        <Typography variant="h5" gutterBottom>
+                            {`Update Payment Method`}
+                        </Typography>
+                        <Typography variant="body1" gutterBottom color="textSecondary">
+                            Please enter your payment details below to save them for future use.
+                        </Typography>
+                    </Box>
+                    <form onSubmit={handleSubmit}>
+                        <Box mb={3}>
+                            <CardElement
+                                options={{
+                                    style: {
+                                        base: {
+                                            fontSize: '16px',
+                                            color: '#424770',
+                                            '::placeholder': {
+                                                color: '#aab7c4',
+                                            },
+                                        },
+                                        invalid: {
+                                            color: '#9e2146',
                                         },
                                     },
-                                    invalid: {
-                                        color: '#9e2146',
-                                    },
-                                },
-                            }}
-                        />
-                    </Box>
-                    <Button 
-                        type="submit" 
-                        variant="contained" 
-                        color="primary" 
-                        fullWidth
-                        disabled={!stripe}
-                    >
-                        Save Payment Method
-                    </Button>
-                    {error && (
-                        <Typography color="error" variant="body2" mt={2}>
-                            {error}
-                        </Typography>
-                    )}
-                </form>
-            </Paper>
+                                }}
+                            />
+                        </Box>
+                        <Button 
+                            type="submit" 
+                            variant="contained" 
+                            color="primary" 
+                            fullWidth
+                            disabled={!stripe}
+                        >
+                            Save Payment Method
+                        </Button>
+                        {error && (
+                            <Typography color="error" variant="body2" mt={2}>
+                                {error}
+                            </Typography>
+                        )}
+                    </form>
+                </Paper>
+            </Box>
         </Box>
     );
 }

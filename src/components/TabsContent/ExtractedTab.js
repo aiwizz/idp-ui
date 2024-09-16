@@ -4,16 +4,17 @@ import {
   Button
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
-
 import { downloadData } from '../../utils/dataUtils';
 
 function ExtractedTab ({ fields, extractedData }) {
-
-  const columns = fields.map((field, index) => ({
-    field: field.split(' ').join('').toLowerCase(),
-    headerName: field,
-    width: 150 
-  }));
+  const columns = [
+    { field: 'fileName', headerName: 'File Name', width: 150 },
+    ...fields.map((field) => ({
+      field: field.split(' ').join('').toLowerCase(),
+      headerName: field,
+      width: 150,
+    }))
+  ];
 
   const rows = extractedData.map((data, index) => {
     const row = { id: index, fileName: data.fileName };
@@ -21,7 +22,7 @@ function ExtractedTab ({ fields, extractedData }) {
       row[field.split(' ').join('').toLowerCase()] = data[field];
     });
     return row;
-  })
+  });
 
   const handleDownload = (format) => {
     downloadData(extractedData, fields, format, 'extracted_data');
@@ -48,5 +49,4 @@ function ExtractedTab ({ fields, extractedData }) {
     </Box>
   );
 };
-
 export default ExtractedTab;
