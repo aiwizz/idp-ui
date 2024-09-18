@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Avatar, Tooltip, Button } from '@mui/material'; // Import Button
+import { Box, Typography, Avatar, Tooltip, Badge, Button } from '@mui/material';
 import DriveFolderUploadRoundedIcon from '@mui/icons-material/DriveFolderUpload';
-import Badge from '@mui/material/Badge';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -45,6 +44,9 @@ function AccountPage() {
     return <Typography variant="h6">Loading account details...</Typography>;  // Show loading state
   }
 
+  // Calculate remaining free uploads
+  const remainingUploads = Math.max(0, FREE_UPLOADS - user.request_count);
+
   return (
     <Box
       display="flex"
@@ -63,14 +65,19 @@ function AccountPage() {
         {user.email}
       </Typography>
       <Tooltip title="Number of Free Uploads Remaining">
-        <Badge badgeContent={parseInt(FREE_UPLOADS - user.request_count)} color="primary" showZero>
+        <Badge badgeContent={remainingUploads} color="primary" showZero>
           <DriveFolderUploadRoundedIcon fontSize="large" />
         </Badge>
       </Tooltip>
       <Typography variant="h6" color="textSecondary" marginTop={3}>
         Total Amount Spent: ${user.total_spent || 0}
       </Typography>
-      {/* Add Update Payment Method Button */}
+      <Typography variant="h6" color="textSecondary" marginTop={1}>
+        Current Spending This Month: ${user.current_spending || 0}
+      </Typography>
+      <Typography variant="h6" color="textSecondary" marginTop={1}>
+        Billing Cycle: {user.billing_cycle_start} - {user.billing_cycle_end}
+      </Typography>
       <Button 
         variant="contained" 
         color="primary" 
@@ -82,5 +89,4 @@ function AccountPage() {
     </Box>
   );
 }
-
 export default AccountPage;
