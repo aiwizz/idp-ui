@@ -30,6 +30,8 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
   const [alertMessage, setAlertMessage] = useState('');
   const navigate = useNavigate();
 
+  const FREE_UPLOADS = 4;
+
   // Handle file upload
   async function handleFileUpload(event) {
     const files = Array.from(event.target.files);
@@ -53,10 +55,10 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
       console.log('Account response:', accountResponse.data);
       const { request_count, payment_method_id } = accountResponse.data;
 
-      if (request_count < 10) {
+      if (request_count < FREE_UPLOADS) {
         // User has free uploads remaining
         await processFiles(files, token);
-      } else if (request_count >= 10 && !payment_method_id) {
+      } else if (request_count >= FREE_UPLOADS && !payment_method_id) {
         // User has exhausted free uploads and has no payment method saved
         navigate('/payment-setup', { state: { filesToProcess: files } });
       } else {

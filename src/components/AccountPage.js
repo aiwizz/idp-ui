@@ -8,7 +8,7 @@ function AccountPage() {
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);  // Track errors
   const navigate = useNavigate();
-  const FREE_UPLOADS = 10;  // Set the number of free uploads in the /process routes.py as well
+  const FREE_UPLOADS = 4;  // Set the number of free uploads in the /process routes.py as well
 
   useEffect(() => {
     const token = localStorage.getItem('token');  // Get the token from local storage
@@ -89,4 +89,5 @@ function AccountPage() {
     </Box>
   );
 }
+
 export default AccountPage;
