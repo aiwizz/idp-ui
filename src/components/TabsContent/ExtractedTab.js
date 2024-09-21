@@ -1,19 +1,44 @@
-import React from 'react';
+import  { useEffect, useState } from 'react';
 import {
   Box,
-  Button
+  Button,
+  CircularProgress
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { downloadData } from '../../utils/dataUtils';
 
-function ExtractedTab ({ fields, extractedData }) {
+function ExtractedTab({ fields = [], extractedData = [] }) {
+  const [isLoading, setIsLoading] = useState(true);
+  useEffect(() => {
+    if (extractedData.length > 0) {
+      setIsLoading(false);
+    }
+  }, [extractedData]);
+
+  if (isLoading) {
+    return (
+      <Box sx={{ mt: 2 }}>
+        <CircularProgress  size={30}/>
+      </Box>
+    );
+  }
+
+  // Handle cases where fields or extractedData are empty
+  if (fields.length === 0 || extractedData.length === 0) {
+    return (
+      <Box sx={{ mt: 2 }}>
+        <p>No data available. Please upload files and extract data.</p>
+      </Box>
+    );
+  }
+
   const columns = [
     { field: 'fileName', headerName: 'File Name', width: 150 },
     ...fields.map((field) => ({
       field: field.split(' ').join('').toLowerCase(),
       headerName: field,
       width: 150,
-    }))
+    })),
   ];
 
   const rows = extractedData.map((data, index) => {
@@ -48,5 +73,6 @@ function ExtractedTab ({ fields, extractedData }) {
       </div>
     </Box>
   );
-};
+}
+
 export default ExtractedTab;

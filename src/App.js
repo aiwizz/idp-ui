@@ -15,6 +15,7 @@ import axios from 'axios';
 
 function App() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [extractedData, setExtractedData] = useState([]);
   const [fields, setFields] = useState(() => {
     // Load fields from localStorage on initial render
     const savedFields = localStorage.getItem('fields');
@@ -85,11 +86,14 @@ function App() {
                     setUploadedFiles={setUploadedFiles}
                     fields={fields}
                     disableBrowse={disableBrowse}
+                    setExtractedData={setExtractedData}
                   />
                   <MainContent
                     uploadedFiles={uploadedFiles}
                     fields={fields}
                     setFields={setFields}
+                    extractedData={extractedData}
+                    setExtractedData={setExtractedData}
                   />
                 </Box>
               </>

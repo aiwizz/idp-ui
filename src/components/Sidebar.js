@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -11,9 +11,10 @@ import {
   DialogContent,
   DialogActions,
   ListItem,
+  CircularProgress
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Document, Page, pdfjs } from 'react-pdf'; // Re-import Document and Page from react-pdf
+import { Document, Page, pdfjs } from 'react-pdf';
 import { PDFDocument } from 'pdf-lib';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -23,28 +24,55 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString();
 
-function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, disableBrowse }) {
+function Sidebar({
+  uploadedFiles,
+  setUploadedFiles,
+  handleFileRemove,
+  fields,
+  disableBrowse,
+  setExtractedData,
+}) {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [numPages, setNumPages] = useState(null);  // Define numPages and setNumPages
+  const [numPages, setNumPages] = useState(null);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false); // New state variable
+  const [processingQueue, setProcessingQueue] = useState([]); // Processing queue
   const navigate = useNavigate();
 
   const FREE_UPLOADS = 4;
+
+  useEffect(() => {
+    if (!isProcessing && processingQueue.length > 0) {
+      processNextFileBatch();
+    }
+  }, [processingQueue, isProcessing]);
 
   // Handle file upload
   async function handleFileUpload(event) {
     const files = Array.from(event.target.files);
 
     if (fields.length === 0) {
-      setAlertMessage('Please add at least one field in Fields Management before processing files.');
+      setAlertMessage(
+        'Please add at least one field in Fields Management before processing files.'
+      );
       setAlertOpen(true);
       return;
     }
+    // Add files to the processing queue
+    setProcessingQueue((prevQueue) => [...prevQueue, ...files]);
+  }
+
+  async function processNextFileBatch() {
+    // Set isProcessing to true
+    setIsProcessing(true);
+    // Get the files to process
+    const filesToProcess = processingQueue;
+    // Clear the processing queue
+    setProcessingQueue([]);
 
     // Get the Bearer token from localStorage
     const token = localStorage.getItem('token');
-
     try {
       // Check the current request count
       const accountResponse = await axios.get('http://127.0.0.1:5000/account', {
@@ -57,35 +85,51 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
 
       if (request_count < FREE_UPLOADS) {
         // User has free uploads remaining
-        await processFiles(files, token);
+        await processFiles(filesToProcess, fields, token);
       } else if (request_count >= FREE_UPLOADS && !payment_method_id) {
         // User has exhausted free uploads and has no payment method saved
-        navigate('/payment-setup', { state: { filesToProcess: files } });
+        navigate('/payment-setup', { state: { filesToProcess } });
       } else {
         // User has a payment method saved and should be charged
-        await processFiles(files, token);
+        await processFiles(filesToProcess, fields, token);
       }
     } catch (error) {
       console.error('Error during file processing:', error);
       setAlertMessage('An error occurred during processing.');
       setAlertOpen(true);
+    } finally {
+      // Set isProcessing to false
+      setIsProcessing(false);
+      // The useEffect hook will check if processingQueue has more files
     }
   }
 
-  async function processFiles(files, token) {
+  async function processFiles(files, fields, token) {
+    
+    const formData = new FormData();
+
+    // Add files to form data
+    files.forEach((file) => {
+      formData.append('files', file);
+    });
+
+    // Add fields to form data
+    fields.forEach((field) => {
+      formData.append('fields[]', field);
+    });
+
     try {
-      const response = await axios.post(
-        'http://127.0.0.1:5000/process',
-        { files: files.map(file => ({ name: file.name })) }, // Send file names
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const response = await axios.post('http://127.0.0.1:5000/process', formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.data.message.includes('processed successfully')) {
-        processFileUpload(files); // Call your existing file upload processing logic
+        // Pass the extracted data to the next step
+        setExtractedData((prevData) => [...prevData, ...response.data.extracted_data]);
+        await processFileUpload(files);
+        console.log('Processing Response:', response.data);
       }
     } catch (error) {
       console.error('Error during file processing:', error);
@@ -160,9 +204,7 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
     const fileToRemove = uploadedFiles[index];
 
     // Remove file from uploadedFiles
-    setUploadedFiles((prevFiles) =>
-      prevFiles.filter((_, i) => i !== index)
-    );
+    setUploadedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
 
     // Clear preview if the removed file was being previewed
     if (selectedFile === fileToRemove) {
@@ -173,11 +215,7 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
   // Render file preview
   function renderFilePreview() {
     if (!selectedFile || !selectedFile.name) {
-      return (
-        <Typography color="textSecondary">
-          No file selected or file has no name.
-        </Typography>
-      );
+      return <Typography color="textSecondary">No file selected or file has no name.</Typography>;
     }
 
     const fileUrl = URL.createObjectURL(selectedFile);
@@ -185,7 +223,7 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
     return (
       <Document
         file={fileUrl}
-        onLoadSuccess={({ numPages }) => setNumPages(numPages)}  // Set numPages when the document loads
+        onLoadSuccess={({ numPages }) => setNumPages(numPages)}
         onLoadError={(error) => console.error('Error while loading document:', error)}
       >
         {Array.from(new Array(numPages), (el, index) => (
@@ -212,19 +250,34 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
         overflowY: 'auto',
       }}
     >
-      <Typography variant="h6" gutterBottom>
+      <Typography variant="h6" gutterBottom color="textSecondary">
         Upload Documents
       </Typography>
-      <Button variant="contained" component="label" disabled={disableBrowse}>
-        Browse Files
-        <input
-          type="file"
-          hidden
-          multiple
-          accept=".pdf,.png,.jpeg,.jpg"
-          onChange={handleFileUpload}
-        />
-      </Button>
+        <Button variant="contained" component="label">  {/* add disabled={isProcessing} to Disable the button when processing and prevent adding more files while processing is running */}
+          {isProcessing ? (
+            <>
+              <CircularProgress size={20} style={{ marginRight: 8 }} />
+              Processing...
+            </>
+          ) : (
+            'Browse Files'
+          )}
+          <input
+            type="file"
+            hidden
+            multiple
+            accept=".pdf,.png,.jpeg,.jpg"
+            onChange={handleFileUpload}
+          />
+        </Button>
+      {/* Processing Indicator */}
+      {isProcessing && (
+        <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+          Find extracted data in <b>"EXTRACTED"</b> tab{'\n'}
+          and files that need human review in <b>"REVIEW"</b> tab.{'\n'}
+          You can upload more files in the queue while processing is running.
+        </Typography>
+      )}
       {/* Uploaded Files List */}
       <Box sx={{ mt: 4 }}>
         <Typography variant="subtitle1">Uploaded Files:</Typography>
@@ -287,4 +340,5 @@ function Sidebar({ uploadedFiles, setUploadedFiles, handleFileRemove, fields, di
     </Box>
   );
 }
+
 export default Sidebar;
