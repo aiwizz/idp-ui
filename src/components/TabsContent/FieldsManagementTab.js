@@ -17,13 +17,15 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 
-function FieldsManagementTab ({ fields, setFields }) {
+function FieldsManagementTab({ fields, setFields }) {
+  console.log('FieldsManagementTab.js - Received fields:', fields);
+
   const [openDialog, setOpenDialog] = useState(false);
   const [currentField, setCurrentField] = useState('');
   const [editIndex, setEditIndex] = useState(null);
 
   const handleDialogOpen = (field = '', index = null) => {
-    setCurrentField(field);
+    setCurrentField(field); // field is now a string
     setEditIndex(index);
     setOpenDialog(true);
   };
@@ -34,13 +36,16 @@ function FieldsManagementTab ({ fields, setFields }) {
     setOpenDialog(false);
   };
 
+  // Ensure we don't add duplicate fields
   const handleFieldSave = () => {
-    if (editIndex !== null) {
-      const updatedFields = [...fields];
-      updatedFields[editIndex] = currentField;
-      setFields(updatedFields);
-    } else {
-      setFields([...fields, currentField]);
+    if (!fields.includes(currentField)) {
+      if (editIndex !== null) {
+        const updatedFields = [...fields];
+        updatedFields[editIndex] = currentField;
+        setFields(updatedFields);
+      } else {
+        setFields([...fields, currentField]);
+      }
     }
     handleDialogClose();
   };
@@ -99,5 +104,6 @@ function FieldsManagementTab ({ fields, setFields }) {
       </Dialog>
     </Box>
   );
-};
+}
+
 export default FieldsManagementTab;

@@ -4,12 +4,14 @@ import ExtractedTab from './TabsContent/ExtractedTab';
 import ReviewTab from './TabsContent/ReviewTab';
 import FieldsManagementTab from './TabsContent/FieldsManagementTab';
 
-function MainContent({ uploadedFiles, fields, setFields, extractedData }) {
-  const [tabIndex, setTabIndex] = useState(0);
+function MainContent({ uploadedFiles, fields, setFields, extractedData, setExtractedData }) {
+  const savedTabIndex = localStorage.getItem('tabIndex') ? parseInt(localStorage.getItem('tabIndex'), 10) : 0;
+  const [tabIndex, setTabIndex] = useState(savedTabIndex);
   const [reviewData, setReviewData] = useState([]);
 
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
+    localStorage.setItem('tabIndex', newValue);
   };
 
   return (

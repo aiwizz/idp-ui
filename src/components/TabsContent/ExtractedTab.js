@@ -1,29 +1,11 @@
-import  { useEffect, useState } from 'react';
-import {
-  Box,
-  Button,
-  CircularProgress
-} from '@mui/material';
+import React from 'react';
+import { Box, Button } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { downloadData } from '../../utils/dataUtils';
 
 function ExtractedTab({ fields = [], extractedData = [] }) {
-  const [isLoading, setIsLoading] = useState(true);
-  useEffect(() => {
-    if (extractedData.length > 0) {
-      setIsLoading(false);
-    }
-  }, [extractedData]);
+  console.log('ExtractedTab.js - extractedData:', extractedData);
 
-  if (isLoading) {
-    return (
-      <Box sx={{ mt: 2 }}>
-        <CircularProgress  size={30}/>
-      </Box>
-    );
-  }
-
-  // Handle cases where fields or extractedData are empty
   if (fields.length === 0 || extractedData.length === 0) {
     return (
       <Box sx={{ mt: 2 }}>
@@ -35,7 +17,7 @@ function ExtractedTab({ fields = [], extractedData = [] }) {
   const columns = [
     { field: 'fileName', headerName: 'File Name', width: 150 },
     ...fields.map((field) => ({
-      field: field.split(' ').join('').toLowerCase(),
+      field: field.replace(/\s+/g, '').toLowerCase(),
       headerName: field,
       width: 150,
     })),
@@ -44,7 +26,7 @@ function ExtractedTab({ fields = [], extractedData = [] }) {
   const rows = extractedData.map((data, index) => {
     const row = { id: index, fileName: data.fileName };
     fields.forEach((field) => {
-      row[field.split(' ').join('').toLowerCase()] = data[field];
+      row[field.replace(/\s+/g, '').toLowerCase()] = data[field] || 'N/A';
     });
     return row;
   });
