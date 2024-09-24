@@ -12,12 +12,13 @@ import PaymentSetup from './components/PaymentSetup';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import axios from 'axios';
-import { loadFields, saveFields, loadExtractedData, saveExtractedData, clearIndexedDB } from './db';
+import { loadFields, saveFields, loadExtractedData, saveExtractedData, loadReviewData, saveReviewData, clearIndexedDB } from './db';
 
 function App() {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [extractedData, setExtractedData] = useState([]);
   const [fields, setFields] = useState([]);
+  const [reviewData, setReviewData] = useState([]); // Add state for reviewData
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,7 +26,7 @@ function App() {
 
   const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
-  // Load fields and extracted data from IndexedDB
+  // Load fields, extracted data, and review data from IndexedDB only if the user is authenticated
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -40,6 +41,12 @@ function App() {
           console.log('Loaded extractedData from IndexedDB:', savedExtractedData);
           setExtractedData(savedExtractedData);
         }
+
+        const savedReviewData = await loadReviewData(); // Load reviewData
+        if (savedReviewData.length > 0) {
+          console.log('Loaded reviewData from IndexedDB:', savedReviewData);
+          setReviewData(savedReviewData);
+        }
       } catch (error) {
         console.error('Error loading data from IndexedDB:', error);
       }
@@ -50,7 +57,7 @@ function App() {
     }
   }, [isAuthenticated]);
 
-  // Save fields and extracted data to IndexedDB when they change
+  // Save fields, extracted data, and review data to IndexedDB when they change
   useEffect(() => {
     const saveData = async () => {
       if (isAuthenticated) {
@@ -62,13 +69,17 @@ function App() {
           if (extractedData.length > 0) {
             await saveExtractedData(extractedData);
           }
+
+          if (reviewData.length > 0) {  // Save reviewData
+            await saveReviewData(reviewData);
+          }
         } catch (error) {
           console.error('Error saving data to IndexedDB:', error);
         }
       }
     };
     saveData();
-  }, [fields, extractedData, isAuthenticated]);
+  }, [fields, extractedData, reviewData, isAuthenticated]);
 
   // Check token validity and handle authentication state
   useEffect(() => {
@@ -76,7 +87,9 @@ function App() {
       try {
         const token = localStorage.getItem('token');
         if (!token) {
-          throw new Error('No token found');
+          setIsAuthenticated(false);
+          navigate('/', { replace: true });
+          return;
         }
 
         const response = await axios.get('http://127.0.0.1:5000/account', {
@@ -87,12 +100,12 @@ function App() {
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
-          navigate('/');
+          navigate('/', { replace: true });
         }
       } catch (error) {
         console.error('Token is expired or invalid. Redirecting to login...', error);
         setIsAuthenticated(false);
-        navigate('/');
+        navigate('/', { replace: true });
       }
     };
 
@@ -107,11 +120,14 @@ function App() {
 
   const handleLogout = async () => {
     try {
-      await clearIndexedDB();
+      await clearIndexedDB(); // Clear data from IndexedDB
       setFields([]);
       setExtractedData([]);
+      setReviewData([]); // Clear reviewData on logout
+      setUploadedFiles([]);
       setIsAuthenticated(false);
-      navigate('/');
+      localStorage.removeItem('token'); // Clear token from localStorage
+      navigate('/', { replace: true }); // Redirect to login page and clear history stack
     } catch (error) {
       console.error('Error during logout:', error);
     }
@@ -139,6 +155,8 @@ function App() {
                       setUploadedFiles={setUploadedFiles}
                       fields={fields}
                       setExtractedData={setExtractedData}
+                      handleLogout={handleLogout}
+                      setReviewData={setReviewData} // Pass down setReviewData
                     />
                     <MainContent
                       uploadedFiles={uploadedFiles}
@@ -146,6 +164,8 @@ function App() {
                       setFields={setFields}
                       extractedData={extractedData}
                       setExtractedData={setExtractedData}
+                      reviewData={reviewData} // Pass reviewData to MainContent
+                      setReviewData={setReviewData} // Pass setReviewData to MainContent
                     />
                   </Box>
                 </>
@@ -174,6 +194,7 @@ function App() {
           </>
         ) : (
           <Route
+            exact
             path="/"
             element={<LandingPage setIsAuthenticated={setIsAuthenticated} setEmailFor2FA={setEmailFor2FA} />}
           />

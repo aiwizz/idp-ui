@@ -31,6 +31,8 @@ function Sidebar({
   fields,
   disableBrowse,
   setExtractedData,
+  setReviewData, // Accept setReviewData as a prop
+  handleLogout
 }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [numPages, setNumPages] = useState(null);
@@ -64,76 +66,65 @@ function Sidebar({
   }
 
   async function processNextFileBatch() {
-    // Set isProcessing to true
     setIsProcessing(true);
-    // Get the files to process
     const filesToProcess = processingQueue;
-    // Clear the processing queue
     setProcessingQueue([]);
-
-    // Get the Bearer token from localStorage
+  
     const token = localStorage.getItem('token');
     try {
-      // Check the current request count
       const accountResponse = await axios.get('http://127.0.0.1:5000/account', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Account response:', accountResponse.data);
+  
       const { request_count, payment_method_id } = accountResponse.data;
-
+  
       if (request_count < FREE_UPLOADS) {
-        // User has free uploads remaining
         await processFiles(filesToProcess, fields, token);
       } else if (request_count >= FREE_UPLOADS && !payment_method_id) {
-        // User has exhausted free uploads and has no payment method saved
         navigate('/payment-setup', { state: { filesToProcess } });
       } else {
-        // User has a payment method saved and should be charged
         await processFiles(filesToProcess, fields, token);
       }
     } catch (error) {
       console.error('Error during file processing:', error);
-      setAlertMessage('An error occurred during processing.');
-      setAlertOpen(true);
+  
+      // Add a check to see if error.response exists
+      if (error.response && error.response.data && error.response.data.msg && error.response.data.msg.includes('Token has expired')) {
+        handleLogout(); // Call handleLogout to clear the session
+        navigate('/', { replace: true });
+      } else {
+        // Handle cases where error.response is undefined or doesn't have the expected structure
+        setAlertMessage(`An error occurred during processing: ${error.message || 'Unknown error occurred'}`);
+        setAlertOpen(true);
+      }
     } finally {
-      // Set isProcessing to false
       setIsProcessing(false);
-      // The useEffect hook will check if processingQueue has more files
     }
   }
 
   async function processFiles(files, fields, token) {
-    
     const formData = new FormData();
 
-    // Add files to form data
     files.forEach((file) => {
       formData.append('files', file);
     });
 
-    // Add fields to form data
     fields.forEach((field) => {
       formData.append('fields[]', field);
     });
 
     try {
       const response = await axios.post('http://127.0.0.1:5000/process', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.data.message.includes('processed successfully')) {
-        // Pass the extracted data to the next step
         setExtractedData((prevData) => [...prevData, ...response.data.extracted_data]);
+        setReviewData((prevData) => [...prevData, ...response.data.review_data]); // Set reviewData
         await processFileUpload(files);
-        console.log('Processing Response:', response.data);
       }
     } catch (error) {
-      console.error('Error during file processing:', error);
-      setAlertMessage('An error occurred during processing.');
+      setAlertMessage(`An error occurred during processing: ${error.message || 'Unknown error occurred'}`);
       setAlertOpen(true);
     }
   }
@@ -175,25 +166,15 @@ function Sidebar({
       }
 
       const { width: imageWidth, height: imageHeight } = image.scale(1);
-
       const page = pdfDoc.addPage([imageWidth, imageHeight]);
-
-      page.drawImage(image, {
-        x: 0,
-        y: 0,
-        width: imageWidth,
-        height: imageHeight,
-      });
+      page.drawImage(image, { x: 0, y: 0, width: imageWidth, height: imageHeight });
 
       const pdfBytes = await pdfDoc.save();
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const pdfFile = new File([blob], `${imageFile.name.split('.')[0]}.pdf`, {
-        type: 'application/pdf',
-      });
+      const pdfFile = new File([blob], `${imageFile.name.split('.')[0]}.pdf`, { type: 'application/pdf' });
 
       return pdfFile;
     } catch (error) {
-      console.error('Error converting image to PDF:', error);
       alert('Failed to convert image to PDF. Please ensure the image is a valid JPEG or PNG.');
       return null;
     }
@@ -202,11 +183,8 @@ function Sidebar({
   // Handle file removal
   function handleFileDelete(index) {
     const fileToRemove = uploadedFiles[index];
-
-    // Remove file from uploadedFiles
     setUploadedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
 
-    // Clear preview if the removed file was being previewed
     if (selectedFile === fileToRemove) {
       setSelectedFile(null);
     }
@@ -227,13 +205,7 @@ function Sidebar({
         onLoadError={(error) => console.error('Error while loading document:', error)}
       >
         {Array.from(new Array(numPages), (el, index) => (
-          <Page
-            key={`page_${index + 1}`}
-            pageNumber={index + 1}
-            width={350}
-            renderTextLayer={false}
-            renderAnnotationLayer={false}
-          />
+          <Page key={`page_${index + 1}`} pageNumber={index + 1} width={350} renderTextLayer={false} renderAnnotationLayer={false} />
         ))}
       </Document>
     );
@@ -253,32 +225,25 @@ function Sidebar({
       <Typography variant="h6" gutterBottom color="textSecondary">
         Upload Documents
       </Typography>
-        <Button variant="contained" component="label">  {/* add disabled={isProcessing} to Disable the button when processing and prevent adding more files while processing is running */}
-          {isProcessing ? (
-            <>
-              <CircularProgress size={20} style={{ marginRight: 8 }} />
-              Processing...
-            </>
-          ) : (
-            'Browse Files'
-          )}
-          <input
-            type="file"
-            hidden
-            multiple
-            accept=".pdf,.png,.jpeg,.jpg"
-            onChange={handleFileUpload}
-          />
-        </Button>
-      {/* Processing Indicator */}
+      <Button variant="contained" component="label">
+        {isProcessing ? (
+          <>
+            <CircularProgress size={20} style={{ marginRight: 8 }} />
+            Processing...
+          </>
+        ) : (
+          'Browse Files'
+        )}
+        <input type="file" hidden multiple accept=".pdf,.png,.jpeg,.jpg" onChange={handleFileUpload} />
+      </Button>
       {isProcessing && (
-        <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+        <Typography variant="body2" color="textSecondary" sx={{ mt: 2 }}>
           Find extracted data in <b>"EXTRACTED"</b> tab{'\n'}
           and files that need human review in <b>"REVIEW"</b> tab.{'\n'}
           You can upload more files in the queue while processing is running.
         </Typography>
       )}
-      {/* Uploaded Files List */}
+
       <Box sx={{ mt: 4 }}>
         <Typography variant="subtitle1">Uploaded Files:</Typography>
         {uploadedFiles.length === 0 ? (
@@ -288,38 +253,21 @@ function Sidebar({
         ) : (
           <List>
             {uploadedFiles.map((file, index) => (
-              <ListItem
-                key={index}
-                button
-                selected={selectedFile === file}
-                onClick={() => setSelectedFile(file)}
-                secondaryAction={
-                  <IconButton edge="end" onClick={() => handleFileDelete(index)}>
-                    <DeleteIcon />
-                  </IconButton>
-                }
-              >
+              <ListItem key={index} button selected={selectedFile === file} onClick={() => setSelectedFile(file)}>
                 <ListItemText primary={file.name} />
+                <IconButton edge="end" onClick={() => handleFileDelete(index)}>
+                  <DeleteIcon />
+                </IconButton>
               </ListItem>
             ))}
           </List>
         )}
       </Box>
 
-      {/* File Preview */}
       {selectedFile && (
         <Box sx={{ mt: 4 }}>
           <Typography variant="subtitle1">File Preview:</Typography>
-          <Box
-            sx={{
-              border: '1px solid #ddd',
-              p: 2,
-              mt: 2,
-              borderRadius: 1,
-              maxHeight: '50vh',
-              overflowY: 'auto',
-            }}
-          >
+          <Box sx={{ border: '1px solid #ddd', p: 2, mt: 2, borderRadius: 1, maxHeight: '50vh', overflowY: 'auto' }}>
             {renderFilePreview()}
           </Box>
         </Box>

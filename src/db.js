@@ -2,16 +2,25 @@ import Dexie from 'dexie';
 
 const db = new Dexie('DocumentProcessingDB');
 db.version(3).stores({
-  fields: '++id, name', // Ensure the `name` is indexed
+  fields: '++id, name',
   extractedData: '++id',
+  reviewData: '++id',  // Add store for review data
 });
+
+export const saveReviewData = async (data) => {
+  await db.reviewData.clear();
+  await db.reviewData.bulkAdd(data);
+};
+
+export const loadReviewData = async () => {
+  return await db.reviewData.toArray();
+};
 
 // Save fields as array of objects with 'name' property, ensuring no duplicates
 export const saveFields = async (fields) => {
   await db.fields.clear();
   const fieldObjects = fields.map((name) => ({ name }));
   
-  // Use bulkPut with `name` uniqueness to avoid duplicates
   for (const fieldObj of fieldObjects) {
     const existingField = await db.fields.get({ name: fieldObj.name });
     if (!existingField) {
@@ -23,8 +32,7 @@ export const saveFields = async (fields) => {
 // Load fields and deduplicate them before returning
 export const loadFields = async () => {
   const fieldObjects = await db.fields.toArray();
-  const uniqueFields = [...new Set(fieldObjects.map((fieldObj) => fieldObj.name))];
-  return uniqueFields;
+  return [...new Set(fieldObjects.map((fieldObj) => fieldObj.name))];
 };
 
 // Save extractedData without manually assigning ids
@@ -38,8 +46,25 @@ export const loadExtractedData = async () => {
   return await db.extractedData.toArray();
 };
 
-// Clear IndexedDB
+// Remove a field from IndexedDB by name
+export const deleteFieldByName = async (fieldName) => {
+  const fieldToDelete = await db.fields.get({ name: fieldName });
+  if (fieldToDelete) {
+    await db.fields.delete(fieldToDelete.id);
+    console.log(`Deleted field from IndexedDB: ${fieldName}`);
+  } else {
+    console.log(`Field not found in IndexedDB: ${fieldName}`);
+  }
+};
+
+// Clear extractedData from IndexedDB
+export const clearExtractedData = async () => {
+  await db.extractedData.clear();  // Clear only extractedData
+};
+
+// Clear IndexedDB (both fields and extracted data)
 export const clearIndexedDB = async () => {
   await db.fields.clear();
   await db.extractedData.clear();
+  await db.reviewData.clear()
 };
