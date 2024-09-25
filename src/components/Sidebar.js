@@ -122,6 +122,7 @@ function Sidebar({
         setExtractedData((prevData) => [...prevData, ...response.data.extracted_data]);
         setReviewData((prevData) => [...prevData, ...response.data.review_data]); // Set reviewData
         await processFileUpload(files);
+        console.log('Files processed successfully:', response.data);
       }
     } catch (error) {
       setAlertMessage(`An error occurred during processing: ${error.message || 'Unknown error occurred'}`);
