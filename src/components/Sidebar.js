@@ -72,7 +72,7 @@ function Sidebar({
   
     const token = localStorage.getItem('token');
     try {
-      const accountResponse = await axios.get('http://127.0.0.1:5000/account', {
+      const accountResponse = await axios.get('http://127.0.0.1:8000/account', {
         headers: { Authorization: `Bearer ${token}` },
       });
   
@@ -114,7 +114,7 @@ function Sidebar({
     });
 
     try {
-      const response = await axios.post('http://127.0.0.1:5000/process', formData, {
+      const response = await axios.post('http://127.0.0.1:8000/process', formData, {
         headers: { Authorization: `Bearer ${token}` },
       });
 

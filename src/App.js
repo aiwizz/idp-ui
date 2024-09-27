@@ -32,7 +32,6 @@ function App() {
       try {
         const savedFields = await loadFields();
         if (savedFields.length > 0) {
-          console.log('Loaded fields from IndexedDB:', savedFields);
           setFields(savedFields);
         }
 
@@ -92,7 +91,7 @@ function App() {
           return;
         }
 
-        const response = await axios.get('http://127.0.0.1:5000/account', {
+        const response = await axios.get('http://127.0.0.1:8000/account', {
           headers: { Authorization: `Bearer ${token}` },
         });
 

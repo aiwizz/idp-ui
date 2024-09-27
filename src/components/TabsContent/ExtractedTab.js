@@ -5,8 +5,6 @@ import { downloadData } from '../../utils/dataUtils';
 import { clearExtractedData } from '../../db'; // Import clearExtractedData from db.js
 
 function ExtractedTab({ fields = [], extractedData = [], setExtractedData }) {
-  console.log('ExtractedTab.js - extractedData:', extractedData);
-
   // Define the columns based on the fields array
   const columns = [
     { field: 'fileName', headerName: 'File Name', width: 150 },

@@ -20,8 +20,6 @@ import AddIcon from '@mui/icons-material/Add';
 import { deleteFieldByName } from '../../db';
 
 function FieldsManagementTab({ fields, setFields }) {
-  console.log('FieldsManagementTab.js - Received fields:', fields);
-
   const [openDialog, setOpenDialog] = useState(false);
   const [currentField, setCurrentField] = useState('');
   const [editIndex, setEditIndex] = useState(null);
