@@ -29,7 +29,7 @@ function ResetPassword() {
     setMessage('');
 
     try {
-      const response = await axios.post(`http://127.0.0.1:8000/reset_password/${token}`, { password });
+      const response = await axios.post(`http://localhost:8000/reset_password/${token}`, { password });
       setMessage(response.data.message);
       setTimeout(() => {
         navigate('/');  // Redirect to login page after a delay

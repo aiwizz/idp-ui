@@ -20,7 +20,7 @@ function Verify2FA({ setIsAuthenticated }) {
     setMessage('');
 
     try {
-      const response = await axios.post(`http://127.0.0.1:8000/verify_2fa/${email}`, {
+      const response = await axios.post(`http://localhost:8000/verify_2fa/${email}`, {
         two_factor_code: verificationCode,
       });
       localStorage.setItem('token', response.data.token);

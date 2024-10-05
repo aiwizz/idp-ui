@@ -30,7 +30,7 @@ function LandingPage({ setIsAuthenticated }) {
   const handleLogin = async () => {
     setLoading(true);  // Show spinner when login starts
     try {
-        const response = await axios.post('http://127.0.0.1:8000/login', loginData);
+        const response = await axios.post('http://localhost:8000/login', loginData);
         console.log(response);
         if (response.data.two_factor_required) {
             navigate('/verify_2fa', { state: { email: loginData.email } });
@@ -60,7 +60,7 @@ const handleRegister = async () => {
   setMessage('');
 
   try {
-    const response = await axios.post('http://127.0.0.1:8000/register', {
+    const response = await axios.post('http://localhost:8000/register', {
       fullname: registerData.fullname,
       email: registerData.email,
       password: registerData.password,
@@ -82,7 +82,7 @@ const handleRegister = async () => {
     setMessage('');
 
     try {
-      const response = await axios.post('http://127.0.0.1:8000/recover_password', { email: recoveryEmail });
+      const response = await axios.post('http://localhost:8000/recover_password', { email: recoveryEmail });
       setMessage(response.data.message);
     } catch (err) {
       setError(err.response.data.message);  

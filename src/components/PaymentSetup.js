@@ -35,7 +35,7 @@ function PaymentSetup() {
             // Save payment method ID to backend
             const token = localStorage.getItem('token');
             await axios.post(
-                'http://127.0.0.1:8000/save-payment-method',
+                'http://localhost:8000/save-payment-method',
                 { payment_method_id: paymentMethod.id },
                 {
                     headers: {
