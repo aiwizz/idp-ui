@@ -17,6 +17,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import DocViewer, { DocViewerRenderers } from 'react-doc-viewer';
+import { getDocument, GlobalWorkerOptions } from 'pdfjs-dist';
+
+// Set the worker to use the locally installed version
+GlobalWorkerOptions.workerSrc = `${process.env.PUBLIC_URL}/pdf.worker.min.mjs`;
 
 function Sidebar({
   uploadedFiles,
@@ -28,6 +32,7 @@ function Sidebar({
 }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedFileUrl, setSelectedFileUrl] = useState(null);
+  const [previewImages, setPreviewImages] = useState([]);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -47,9 +52,7 @@ function Sidebar({
     const files = Array.from(event.target.files);
 
     if (fields.length === 0) {
-      setAlertMessage(
-        'Please add at least one field in Fields Management before processing files.'
-      );
+      setAlertMessage('Please add at least one field in Fields Management before processing files.');
       setAlertOpen(true);
       return;
     }
@@ -71,9 +74,7 @@ function Sidebar({
       const remainingFreeUploads = FREE_UPLOADS - request_count;
 
       if (remainingFreeUploads > 0 && filesToProcess.length > remainingFreeUploads) {
-        setAlertMessage(
-          `You have ${remainingFreeUploads} free uploads remaining. Please upload ${remainingFreeUploads} or fewer files.`
-        );
+        setAlertMessage(`You have ${remainingFreeUploads} free uploads remaining. Please upload ${remainingFreeUploads} or fewer files.`);
         setAlertOpen(true);
         setIsProcessing(false);
         return;
@@ -131,6 +132,7 @@ function Sidebar({
     if (selectedFile === fileToRemove) {
       setSelectedFile(null);
       setSelectedFileUrl(null);
+      setPreviewImages([]);
     }
   }
 
@@ -139,6 +141,42 @@ function Sidebar({
     setSelectedFile(file);
     const fileUrl = URL.createObjectURL(file);
     setSelectedFileUrl(fileUrl);
+
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    if (fileExtension === 'pdf') {
+      convertPdfToImages(file);
+    } else {
+      setPreviewImages([{ uri: fileUrl }]);
+    }
+  }
+
+  // Convert PDF to images
+  async function convertPdfToImages(file) {
+    try {
+      const url = URL.createObjectURL(file);
+      const pdf = await getDocument(url).promise;
+      const numPages = pdf.numPages;
+      const images = [];
+
+      for (let i = 1; i <= numPages; i++) {
+        const page = await pdf.getPage(i);
+        const viewport = page.getViewport({ scale: 1.5 });
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+
+        await page.render({ canvasContext: context, viewport: viewport }).promise;
+
+        images.push({ uri: canvas.toDataURL('image/png') });
+      }
+
+      setPreviewImages(images);
+    } catch (error) {
+      console.error('Error converting PDF to images:', error);
+      setAlertMessage('Failed to convert PDF for preview. Please try again.');
+      setAlertOpen(true);
+    }
   }
 
   // Cleanup file URL when component unmounts
@@ -150,17 +188,27 @@ function Sidebar({
     };
   }, [selectedFileUrl]);
 
-  // Render file preview using react-doc-viewer
+  // Render file preview using DocViewer for PDFs and images, or fallback to <img> for images
   function renderFilePreview() {
     if (!selectedFile || !selectedFileUrl) {
       return <Typography color="textSecondary">No file selected or file has no name.</Typography>;
     }
 
-    const docs = [{ uri: selectedFileUrl, fileType: selectedFile.type }];
+    // Check if the selected file is an image
+    const fileExtension = selectedFile.name.split('.').pop().toLowerCase();
+    if (fileExtension === 'png' || fileExtension === 'jpg' || fileExtension === 'jpeg') {
+      return (
+        <img
+          src={selectedFileUrl}
+          alt={selectedFile.name}
+          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+        />
+      );
+    }
 
     return (
       <DocViewer
-        documents={docs}
+        documents={previewImages}
         pluginRenderers={DocViewerRenderers}
         style={{ width: '100%', height: '100%' }}
         config={{ header: { disableHeader: true } }}
