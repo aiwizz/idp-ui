@@ -5,7 +5,7 @@ import ReviewTab from './TabsContent/ReviewTab';
 import FieldsManagementTab from './TabsContent/FieldsManagementTab';
 import { loadReviewData, saveReviewData } from '../db'; // IndexedDB review data handling
 
-function MainContent({ uploadedFiles, fields, setFields, extractedData, setExtractedData, reviewData, setReviewData }) {
+function MainContent({ fields, setFields, extractedData, setExtractedData, reviewData, setReviewData }) {
   const savedTabIndex = localStorage.getItem('tabIndex') ? parseInt(localStorage.getItem('tabIndex'), 10) : 0;
   const [tabIndex, setTabIndex] = useState(savedTabIndex);
 

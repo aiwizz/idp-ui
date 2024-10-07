@@ -1,17 +1,28 @@
-import React from 'react';
-import { Box, Button } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Button, Menu, MenuItem } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { downloadData } from '../../utils/dataUtils';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 function ReviewTab({ fields = [], reviewData = [], setReviewData }) {
-  // Handle clearing review data
-  const handleClearData = () => {
-    setReviewData([]); // Clear only the rows, not the grid
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const handleDownloadMenuOpen = (event) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  // Handle downloading the data
+  const handleDownloadMenuClose = () => {
+    setAnchorEl(null);
+  };
+
   const handleDownload = (format) => {
     downloadData(reviewData, fields, format, 'review_data');
+    handleDownloadMenuClose();
+  };
+
+  // Handle clearing review data
+  const handleClearData = () => {
+    setReviewData([]);
   };
 
   // Prepare columns for DataGrid
@@ -36,13 +47,26 @@ function ReviewTab({ fields = [], reviewData = [], setReviewData }) {
   return (
     <Box sx={{ mt: 4 }}>
       <Box sx={{ mb: 2 }}>
-        <Button variant="outlined" onClick={() => handleDownload('csv')} sx={{ mr: 2 }}>
-          Download CSV
+        <Button
+          variant="outlined"
+          onClick={handleDownloadMenuOpen}
+          sx={{ mr: 2 }}
+          endIcon={<KeyboardArrowDownIcon />}
+        >
+          Download As...
         </Button>
-        <Button variant="outlined" onClick={() => handleDownload('json')}>
-          Download JSON
-        </Button>
-        <Button variant="outlined" color='error' onClick={handleClearData} sx={{ ml: 2 }}>
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleDownloadMenuClose}
+        >
+          <MenuItem onClick={() => handleDownload('csv')}>CSV</MenuItem>
+          <MenuItem onClick={() => handleDownload('json')}>JSON</MenuItem>
+          <MenuItem onClick={() => handleDownload('xlsx')}>XLSX</MenuItem>
+          <MenuItem onClick={() => handleDownload('pdf')}>PDF</MenuItem>
+          <MenuItem onClick={() => handleDownload('xml')}>XML</MenuItem>
+        </Menu>
+        <Button variant="outlined" color="error" onClick={handleClearData} sx={{ ml: 2 }}>
           Clear Data
         </Button>
       </Box>

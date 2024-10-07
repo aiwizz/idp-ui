@@ -18,6 +18,8 @@
     "axios": "^1.7.4",
     "dayjs": "^1.11.13",
     "dexie": "^4.0.8",
+    "jspdf": "^2.5.2",
+    "jspdf-autotable": "^3.8.3",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "^4.6.82",
     "react": "^18.3.1",
@@ -25,7 +27,8 @@
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.26.1",
     "react-scripts": "^5.0.1",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "react-scripts start",
