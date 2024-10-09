@@ -3,6 +3,7 @@ import { Box, TextField, Button, Typography, Paper, Alert, CircularProgress } fr
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logoname from '../../logoname.png';
+import backgroundImage from '../../background-pic.jpg';
 
 function Verify2FA({ setIsAuthenticated }) {
   const [verificationCode, setVerificationCode] = useState('');
@@ -44,6 +45,12 @@ function Verify2FA({ setIsAuthenticated }) {
       alignItems="center"
       height="100vh"
       bgcolor="#f5f5f5"
+      sx={{
+        backgroundImage: `url(${backgroundImage})`,  // Use the local background image
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        position: 'relative',
+      }}
     >
       <Paper elevation={3} sx={{ padding: 4, maxWidth: 400, width: '100%' }}>
        <img src={logoname} alt="Logo" style={{ height: 50, marginLeft: 100 }} />

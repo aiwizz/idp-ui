@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Box, TextField, Button, Typography, Paper, Tabs, Tab, Alert, CircularProgress } from '@mui/material';
-import logoname from '../../logoname.png'
+import logoname from '../../logoname.png';
+import backgroundImage from '../../background-pic.jpg';  // Make sure to use the correct path to your image file
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';  // Import useNavigate
-
+import { useNavigate } from 'react-router-dom';
 
 function LandingPage({ setIsAuthenticated }) {
   const [tabIndex, setTabIndex] = useState(0);
@@ -17,9 +17,9 @@ function LandingPage({ setIsAuthenticated }) {
   const [recoveryEmail, setRecoveryEmail] = useState('');
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);  // Loading state
+  const [loading, setLoading] = useState(false);
 
-  const navigate = useNavigate();  // Initialize useNavigate
+  const navigate = useNavigate();
 
   const handleTabChange = (event, newValue) => {
     setTabIndex(newValue);
@@ -28,56 +28,49 @@ function LandingPage({ setIsAuthenticated }) {
   };
 
   const handleLogin = async () => {
-    setLoading(true);  // Show spinner when login starts
+    setLoading(true);
     try {
-        const response = await axios.post('http://localhost:8000/login', loginData);
-        console.log(response);
-        if (response.data.two_factor_required) {
-            navigate('/verify_2fa', { state: { email: loginData.email } });
-        } else {
-            // Get the token from the response and store it in local storage
-            localStorage.setItem('fullname', response.data.fullname); // Ensure the backend sends fullname
-            localStorage.setItem('email', loginData.email); // Or use response.data.email if available
-            setIsAuthenticated(true);
-            // Redirect to MainContent component
-            navigate('/home');
-        }
+      const response = await axios.post('http://localhost:8000/login', loginData);
+      if (response.data.two_factor_required) {
+        navigate('/verify_2fa', { state: { email: loginData.email } });
+      } else {
+        localStorage.setItem('fullname', response.data.fullname);
+        localStorage.setItem('email', loginData.email);
+        setIsAuthenticated(true);
+        navigate('/home');
+      }
     } catch (err) {
-        console.error(err.response.data.message);
-        setError(err.response.data.message);
+      setError(err.response.data.message);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
-};
+  };
 
-const handleRegister = async () => {
-  if (registerData.password !== registerData.confirmPassword) {
-    setError('Passwords do not match.');
-    return;
-  }
-  setLoading(true);  // Set loading to true when the request starts
-  setError('');
-  setMessage('');
+  const handleRegister = async () => {
+    if (registerData.password !== registerData.confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    setLoading(true);
+    setError('');
+    setMessage('');
 
-  try {
-    const response = await axios.post('http://localhost:8000/register', {
-      fullname: registerData.fullname,
-      email: registerData.email,
-      password: registerData.password,
-    });
-    console.log(response);
-    setMessage(response.data.message);
-  } catch (err) {
-    console.log(err);
-    setError(err.response.data.message);
-  }finally {
-    setLoading(false);  // Set loading to false when the request finishes
-  }
-};
-
+    try {
+      const response = await axios.post('http://localhost:8000/register', {
+        fullname: registerData.fullname,
+        email: registerData.email,
+        password: registerData.password,
+      });
+      setMessage(response.data.message);
+    } catch (err) {
+      setError(err.response.data.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handlePasswordRecovery = async () => {
-    setLoading(true);  // Set loading to true when the request starts
+    setLoading(true);
     setError('');
     setMessage('');
 
@@ -85,22 +78,53 @@ const handleRegister = async () => {
       const response = await axios.post('http://localhost:8000/recover_password', { email: recoveryEmail });
       setMessage(response.data.message);
     } catch (err) {
-      setError(err.response.data.message);  
-    }finally {
-      setLoading(false);  // Set loading to false when the request finishes
+      setError(err.response.data.message);
+    } finally {
+      setLoading(false);
     }
   };
-  
+
   return (
     <Box
       display="flex"
       justifyContent="center"
       alignItems="center"
       height="100vh"
-      bgcolor="#f5f5f5"
+      sx={{
+        backgroundImage: `url(${backgroundImage})`,  // Use the local background image
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        position: 'relative',
+      }}
     >
-      <Paper elevation={3} sx={{ padding: 4, maxWidth: 400, width: '100%' }}>
-      <img src={logoname} alt="Logo" style={{ height: 50, marginLeft: 100 }} />
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '20%',
+          left: '50%',
+          width: '300px',
+          height: '300px',
+          borderRadius: '50%',
+          background: 'rgba(255,255,255,0.08)',
+          transform: 'translate(-50%, -50%)',
+          filter: 'blur(100px)',
+          zIndex: '0',
+        }}
+      ></Box>
+      <Paper
+        elevation={6}
+        sx={{
+          padding: 4,
+          maxWidth: 400,
+          width: '100%',
+          backgroundColor: 'rgba(255, 255, 255, 0.90)',
+          zIndex: 1,
+          position: 'relative',
+        }}
+      >
+        <Box display="flex" justifyContent="center" alignItems="center" mb={3}>
+          <img src={logoname} alt="Logo" style={{ height: 50 }} />
+        </Box>
         <Tabs
           value={tabIndex}
           onChange={handleTabChange}
@@ -115,7 +139,7 @@ const handleRegister = async () => {
 
         {tabIndex === 0 && (
           <Box>
-            <Typography variant="h6" sx={{ marginBottom: 2 }}>
+            <Typography variant="h6" sx={{ marginBottom: 2, textAlign: 'center' }}>
               Login
             </Typography>
             {message && <Alert severity="success">{message}</Alert>}
@@ -143,16 +167,16 @@ const handleRegister = async () => {
               color="primary"
               sx={{ marginTop: 2 }}
               onClick={handleLogin}
-              disabled={loading}  // Disable the button when loading
+              disabled={loading}
             >
-             {loading ? <CircularProgress size={24} /> : 'Login'}  {/* Show spinner or text based on loading state */}
+              {loading ? <CircularProgress size={24} /> : 'Login'}
             </Button>
           </Box>
         )}
 
         {tabIndex === 1 && (
           <Box>
-            <Typography variant="h6" sx={{ marginBottom: 2 }}>
+            <Typography variant="h6" sx={{ marginBottom: 2, textAlign: 'center' }}>
               Register
             </Typography>
             {message && <Alert severity="success">{message}</Alert>}
@@ -197,16 +221,16 @@ const handleRegister = async () => {
               color="primary"
               sx={{ marginTop: 2 }}
               onClick={handleRegister}
-              disabled={loading}  // Disable the button when loading
+              disabled={loading}
             >
-              {loading ? <CircularProgress size={24} /> : 'Register'}  {/*Show spinner or text based on loading state*/}
+              {loading ? <CircularProgress size={24} /> : 'Register'}
             </Button>
           </Box>
         )}
 
         {tabIndex === 2 && (
           <Box>
-            <Typography variant="h6" sx={{ marginBottom: 2 }}>
+            <Typography variant="h6" sx={{ marginBottom: 2, textAlign: 'center' }}>
               Forgot Password
             </Typography>
             {message && <Alert severity="success">{message}</Alert>}
@@ -225,9 +249,9 @@ const handleRegister = async () => {
               color="primary"
               sx={{ marginTop: 2 }}
               onClick={handlePasswordRecovery}
-              disabled={loading}  // Disable the button when loading
+              disabled={loading}
             >
-              {loading ? <CircularProgress size={24} /> : 'Recover Password'}  {/* Show spinner or text based on loading state */}
+              {loading ? <CircularProgress size={24} /> : 'Recover Password'}
             </Button>
           </Box>
         )}

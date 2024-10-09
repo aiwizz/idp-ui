@@ -3,6 +3,7 @@ import { Box, TextField, Button, Typography, Paper, Alert, CircularProgress } fr
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import logoname from '../../logoname.png'
+import backgroundImage from '../../background-pic.jpg';
 
 function ResetPassword() {
   const [password, setPassword] = useState('');
@@ -48,6 +49,12 @@ function ResetPassword() {
       alignItems="center"
       height="100vh"
       bgcolor="#f5f5f5"
+      sx={{
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        position: 'relative',
+      }}
     >
       <Paper elevation={3} sx={{ padding: 4, maxWidth: 400, width: '100%' }}>
       <img src={logoname} alt="Logo" style={{ height: 50, marginLeft: 100 }} />
