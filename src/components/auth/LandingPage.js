@@ -139,9 +139,6 @@ function LandingPage({ setIsAuthenticated }) {
 
         {tabIndex === 0 && (
           <Box>
-            <Typography variant="h6" sx={{ marginBottom: 2, textAlign: 'center' }}>
-              Login
-            </Typography>
             {message && <Alert severity="success">{message}</Alert>}
             {error && <Alert severity="error">{error}</Alert>}
             <TextField
@@ -176,9 +173,6 @@ function LandingPage({ setIsAuthenticated }) {
 
         {tabIndex === 1 && (
           <Box>
-            <Typography variant="h6" sx={{ marginBottom: 2, textAlign: 'center' }}>
-              Register
-            </Typography>
             {message && <Alert severity="success">{message}</Alert>}
             {error && <Alert severity="error">{error}</Alert>}
             <TextField
@@ -230,9 +224,6 @@ function LandingPage({ setIsAuthenticated }) {
 
         {tabIndex === 2 && (
           <Box>
-            <Typography variant="h6" sx={{ marginBottom: 2, textAlign: 'center' }}>
-              Forgot Password
-            </Typography>
             {message && <Alert severity="success">{message}</Alert>}
             {error && <Alert severity="error">{error}</Alert>}
             <TextField
